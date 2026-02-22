@@ -64,14 +64,30 @@ export default function SubnetPage() {
   const criteria = SUBNET_GATES[subnet] || { minScore: 0, desc: 'Open to everyone.' }
   const isLocked = criteria.minScore > 0 && (userScore === null || userScore < criteria.minScore)
 
-  const handlePostSubmit = (content: string) => {
+  const handlePostSubmit = async (content: string) => {
+    if (!connected || !publicKey) return
     setIsSubmitting(true)
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/contents/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content,
+          subnet: `#${subnet}`,
+          ownerWalletAddress: publicKey.toBase58(),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create post')
+      }
+
       const newPost: PostProps = {
         id: Math.random().toString(),
         author: {
-          username: 'You (Demo)',
-          walletAddress: publicKey?.toBase58() || 'YourWalletAddress123...',
+          username: 'You',
+          walletAddress: publicKey.toBase58(),
         },
         content,
         subnet: `#${subnet}`,
@@ -80,8 +96,12 @@ export default function SubnetPage() {
         createdAt: new Date().toISOString()
       }
       setPosts([newPost, ...posts])
+    } catch (error) {
+      console.error(error)
+      alert("Failed to submit post")
+    } finally {
       setIsSubmitting(false)
-    }, 1000)
+    }
   }
 
   return (

@@ -13,11 +13,16 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await socialfi.profiles.profilesList({
-      apiKey: process.env.TAPESTRY_API_KEY || '',
-      walletAddress,
-    })
+    const url = `https://api.usetapestry.dev/api/v1/profiles?walletAddress=${walletAddress}&apiKey=${process.env.TAPESTRY_API_KEY || ''}`
+    
+    const res = await fetch(url)
+    
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(`Tapestry Profile Fetch Error: ${res.status} ${res.statusText} - ${errorText}`)
+    }
 
+    const response = await res.json()
     return NextResponse.json(response)
   } catch (error: unknown) {
     if (error instanceof Error) {

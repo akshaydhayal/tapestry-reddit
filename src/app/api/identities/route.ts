@@ -21,10 +21,15 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await socialfi.identities.identitiesDetail({
-      id: walletAddress,
-      apiKey: process.env.TAPESTRY_API_KEY,
-    })
+    const url = `https://api.usetapestry.dev/api/v1/identities/${walletAddress}?apiKey=${process.env.TAPESTRY_API_KEY}`
+    const res = await fetch(url)
+    
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(`Tapestry Identity Fetch Error: ${res.status} ${res.statusText} - ${errorText}`)
+    }
+
+    const response = await res.json()
 
     console.log('Identities API response:', response)
     return NextResponse.json(response)

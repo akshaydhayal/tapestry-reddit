@@ -51,17 +51,33 @@ export default function HomeFeedPage() {
   const [posts, setPosts] = useState<PostProps[]>(initialDummyPosts)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [feedType, setFeedType] = useState<'following' | 'global'>('global')
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
 
-  const handlePostSubmit = (content: string, subnet: string) => {
+  const handlePostSubmit = async (content: string, subnet: string) => {
+    if (!connected || !publicKey) return
     setIsSubmitting(true)
-    // Simulate API call delay
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/contents/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content,
+          subnet,
+          ownerWalletAddress: publicKey.toBase58(),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create post')
+      }
+
+      // Add to local state for instant feedback
       const newPost: PostProps = {
         id: Math.random().toString(),
         author: {
-          username: 'You (Demo)',
-          walletAddress: 'YourWalletAddress123...',
+          username: 'You',
+          walletAddress: publicKey.toBase58(),
         },
         content,
         subnet,
@@ -70,8 +86,12 @@ export default function HomeFeedPage() {
         createdAt: new Date().toISOString()
       }
       setPosts([newPost, ...posts])
+    } catch (error) {
+      console.error(error)
+      alert("Failed to create post")
+    } finally {
       setIsSubmitting(false)
-    }, 1000)
+    }
   }
 
   return (

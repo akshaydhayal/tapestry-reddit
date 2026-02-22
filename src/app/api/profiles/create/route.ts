@@ -15,18 +15,27 @@ export async function POST(req: NextRequest) {
     )
   }
   try {
-    const profile = await socialfi.profiles.findOrCreateCreate(
-      {
-        apiKey: process.env.TAPESTRY_API_KEY || '',
+    const url = `https://api.usetapestry.dev/api/v1/profiles/findOrCreate?apiKey=${process.env.TAPESTRY_API_KEY || ''}`
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
+      body: JSON.stringify({
         walletAddress: ownerWalletAddress,
         username,
         bio,
         image,
         blockchain: 'SOLANA',
-      },
-    )
+      })
+    })
+
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(`Tapestry API Error: ${res.status} ${res.statusText} - ${errorText}`)
+    }
+
+    const profile = await res.json()
 
     return NextResponse.json(profile)
   } catch (error: any) {
