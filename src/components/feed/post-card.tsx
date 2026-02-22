@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Heart, MessageCircle, Share2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export interface PostProps {
   id: string
@@ -20,10 +21,12 @@ export interface PostProps {
   onLike?: () => void
 }
 
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useProfileStore } from '@/store/profile'
 
 export function PostCard({ post }: { post: PostProps }) {
+  const router = useRouter()
   const { mainUsername } = useProfileStore()
   
   const [isLiked, setIsLiked] = useState<boolean>(!!post.isLiked)
@@ -35,7 +38,8 @@ export function PostCard({ post }: { post: PostProps }) {
   const [commentText, setCommentText] = useState('')
   const [isCommenting, setIsCommenting] = useState(false)
 
-  const handleLike = async () => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!mainUsername || isLiking) return
 
     setIsLiking(true)
@@ -69,7 +73,8 @@ export function PostCard({ post }: { post: PostProps }) {
     }
   }
 
-  const handleComment = async () => {
+  const handleComment = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!mainUsername || !commentText.trim() || isCommenting) return
 
     setIsCommenting(true)
@@ -97,7 +102,10 @@ export function PostCard({ post }: { post: PostProps }) {
   }
 
   return (
-    <Card className="bg-zinc-950/50 backdrop-blur-md border-zinc-800/80 hover:border-zinc-700 transition-colors mb-4 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+    <Card 
+      onClick={() => router.push(`/post/${post.id}`)}
+      className="bg-zinc-950/50 backdrop-blur-md border-zinc-800/80 hover:border-zinc-700 transition-colors mb-4 rounded-xl overflow-hidden shadow-lg shadow-black/20 cursor-pointer group"
+    >
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <Avatar className="h-10 w-10 ring-2 ring-zinc-800 ring-offset-2 ring-offset-black">
@@ -113,7 +121,7 @@ export function PostCard({ post }: { post: PostProps }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-zinc-100 truncate">{post.author.username}</span>
+                <span className="font-semibold text-zinc-100 group-hover:text-purple-400 transition-colors truncate">{post.author.username}</span>
                 <span className="text-sm text-zinc-500 truncate max-w-[120px]">
                   {post.author.walletAddress.slice(0,4)}...{post.author.walletAddress.slice(-4)}
                 </span>
@@ -134,7 +142,7 @@ export function PostCard({ post }: { post: PostProps }) {
 
             <div className="flex items-center gap-6 mt-4 pt-4 border-t border-zinc-900/50">
               <button 
-                onClick={handleLike}
+                onClick={(e) => handleLike(e)}
                 disabled={isLiking}
                 className={`flex items-center gap-2 text-sm transition-colors ${isLiked ? 'text-pink-500' : 'text-zinc-500 hover:text-pink-400'}`}
               >
@@ -143,20 +151,26 @@ export function PostCard({ post }: { post: PostProps }) {
               </button>
               
               <button 
-                onClick={() => setShowCommentBox(!showCommentBox)}
+                onClick={(e) => { e.stopPropagation(); setShowCommentBox(!showCommentBox); }}
                 className="flex items-center gap-2 text-sm text-zinc-500 hover:text-blue-400 transition-colors"
               >
                 <MessageCircle className="h-4 w-4" />
                 <span>{commentsCount}</span>
               </button>
 
-              <button className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors ml-auto">
+              <button 
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors ml-auto"
+              >
                 <Share2 className="h-4 w-4" />
               </button>
             </div>
 
             {showCommentBox && (
-              <div className="mt-4 flex gap-2 w-full">
+              <div 
+                className="mt-4 flex gap-2 w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <input
                   type="text"
                   placeholder="Write a comment..."
@@ -165,7 +179,7 @@ export function PostCard({ post }: { post: PostProps }) {
                   className="flex-1 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors"
                 />
                 <button
-                  onClick={handleComment}
+                  onClick={(e) => handleComment(e)}
                   disabled={isCommenting || !commentText.trim()}
                   className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50"
                 >
