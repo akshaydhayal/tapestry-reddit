@@ -15,9 +15,9 @@ export function SolanaWalletProvider({
 }: {
   children: React.ReactNode
 }) {
-  // Use Devnet or Mainnet-beta
+  // Use Devnet RPC
   const network = WalletAdapterNetwork.Devnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const endpoint = process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl(network)
   
   const wallets = useMemo(() => [], [])
 

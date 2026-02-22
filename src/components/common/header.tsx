@@ -101,68 +101,29 @@ export function Header() {
               <span>Subnets</span>
             </Link>
 
-            {connected ? (
-              mainUsername ? (
-                <div className="flex items-center relative" ref={dropdownRef}>
-                  <div className="relative">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="space-x-2"
-                    >
-                      <p className="truncate font-bold">{mainUsername}</p>
-                      <Menu size={20} />
-                    </Button>
-                    {isDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-gray-800 shadow-lg rounded-md overflow-hidden z-50">
-                        <div className="border-b border-muted-light">
-                          <Button
-                            variant="ghost"
-                            className="px-4 py-2 hover:bg-muted-light w-full"
-                            onClick={() => handleCopy(walletAddress)}
-                          >
-                            {copied ? (
-                              <Check size={16} className="mr-2" />
-                            ) : (
-                              <Clipboard size={16} className="mr-2" />
-                            )}
-                            {abbreviateWalletAddress({
-                              address: walletAddress,
-                            })}
-                          </Button>
-                        </div>
+            <div className="flex items-center space-x-4">
+              {/* Only show profile stuff when the wallet is connected */}
+              {connected && (
+                mainUsername ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.push(`/${mainUsername}`)}
+                    className="space-x-2"
+                  >
+                    <User size={16} />
+                    <p className="truncate font-bold">{mainUsername}</p>
+                  </Button>
+                ) : (
+                  <CreateProfileContainer
+                    setIsProfileCreated={setIsProfileCreated}
+                    setProfileUsername={setProfileUsername}
+                  />
+                )
+              )}
 
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            router.push(`/${mainUsername}`)
-                            setIsDropdownOpen(false)
-                          }}
-                          className="px-4 py-2 hover:bg-muted-light w-full"
-                        >
-                          <User size={16} className="mr-2" /> My Profile
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          className="px-4 py-2 hover:bg-muted-light w-full !text-red-500"
-                          onClick={disconnect}
-                        >
-                          <LogOut size={16} className="mr-2" /> Log Out
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <CreateProfileContainer
-                  setIsProfileCreated={setIsProfileCreated}
-                  setProfileUsername={setProfileUsername}
-                />
-              )
-            ) : (
-              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 transition-colors !rounded-lg" />
-            )}
+              {/* Always render the Solana Wallet Adapter native button */}
+              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 transition-colors auto-min-w !rounded-lg" />
+            </div>
 
             <div className="flex items-center gap-2">
               <DialectNotificationComponent />
