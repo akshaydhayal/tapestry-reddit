@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/common/button'
 import { abbreviateWalletAddress } from '@/components/common/tools'
-import { useLogin, usePrivy } from '@privy-io/react-auth'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import {
   Check,
   Clipboard,
@@ -31,9 +32,7 @@ export function Header() {
   const { profiles } = useGetProfiles({
     walletAddress: walletAddress || '',
   })
-  const { ready, authenticated, logout } = usePrivy()
-  const { login } = useLogin()
-  const disableLogin = !ready || (ready && authenticated)
+  const { connected, disconnect } = useWallet()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const dropdownRef = useRef(null)
@@ -91,26 +90,18 @@ export function Header() {
               className="flex items-center hover:opacity-80 transition-opacity"
             >
               <Home className="h-4 w-4 mr-2" />
-              <span>Home</span>
+              <span>Global Feed</span>
             </Link>
 
             <Link
-              href="/token"
-              className="flex items-center hover:opacity-80 transition-opacity"
-            >
-              <Coins className="h-4 w-4 mr-2" />
-              <span>Tokens</span>
-            </Link>
-
-            <Link
-              href="/trade"
+              href="/subnets"
               className="flex items-center hover:opacity-80 transition-opacity"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              <span>Swap</span>
+              <span>Subnets</span>
             </Link>
 
-            {ready && authenticated ? (
+            {connected ? (
               mainUsername ? (
                 <div className="flex items-center relative" ref={dropdownRef}>
                   <div className="relative">
@@ -155,7 +146,7 @@ export function Header() {
                         <Button
                           variant="ghost"
                           className="px-4 py-2 hover:bg-muted-light w-full !text-red-500"
-                          onClick={logout}
+                          onClick={disconnect}
                         >
                           <LogOut size={16} className="mr-2" /> Log Out
                         </Button>
@@ -170,20 +161,7 @@ export function Header() {
                 />
               )
             ) : (
-              <Button
-                variant="ghost"
-                className='!text-green-500'
-                disabled={disableLogin}
-                onClick={() =>
-                  login({
-                    loginMethods: ['wallet'],
-                    walletChainType: 'ethereum-and-solana',
-                    disableSignup: false,
-                  })
-                }
-              >
-                <LogIn className="h-4 w-4 mr-2" /> Log in
-              </Button>
+              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 transition-colors !rounded-lg" />
             )}
 
             <div className="flex items-center gap-2">

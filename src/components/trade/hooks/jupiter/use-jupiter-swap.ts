@@ -1,6 +1,6 @@
 // import { isSolanaWallet } from '@dynamic-labs/solana'
 import { useToastContent } from '@/components/starterkit/hooks/use-toast-content'
-import { ConnectedSolanaWallet } from '@privy-io/react-auth'
+import { WalletContextState } from '@solana/wallet-adapter-react'
 import { Connection, VersionedTransaction } from '@solana/web3.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -11,7 +11,7 @@ interface UseJupiterSwapParams {
   inputAmount: string
   inputDecimals?: number
   outputDecimals?: number
-  wallet: ConnectedSolanaWallet | null
+  wallet: WalletContextState | null
   walletAddress: string
   swapMode?: string
 }
@@ -214,7 +214,7 @@ export function useJupiterSwap({
 
       toast.dismiss(preparingToastId)
 
-      const signedTransaction = await wallet.signTransaction(transaction)
+      const signedTransaction = await wallet.signTransaction!(transaction)
 
       const sendingToastId = toast.loading(
         LOADINGS.SEND_LOADING.title,

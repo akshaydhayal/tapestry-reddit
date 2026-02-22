@@ -1,5 +1,5 @@
 import { Header } from '@/components/common/header'
-import { PrivyClientProvider } from '@/components/provider/PrivyClientProvider'
+import { SolanaWalletProvider } from '@/components/provider/solana-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -29,11 +29,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <PrivyClientProvider>
+          <SolanaWalletProvider>
             <Header />
             <Toaster />
             <div className="max-w-6xl mx-auto pt-12 pb-22">{children}</div>
-          </PrivyClientProvider>
+          </SolanaWalletProvider>
         </ThemeProvider>
       </body>
     </html>

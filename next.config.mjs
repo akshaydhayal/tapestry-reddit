@@ -9,6 +9,11 @@ const nextConfig = {
       },
     ],
   },
+  transpilePackages: [
+    '@noble/hashes',
+    '@noble/curves',
+    '@solana/web3.js'
+  ],
 }
 
 export default nextConfig

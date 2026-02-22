@@ -15,7 +15,7 @@ import {
   formatRawAmount,
   formatUsdValue,
 } from '@/utils/format'
-import { useSolanaWallets } from '@privy-io/react-auth'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SOL_MINT, SSE_MINT } from '../constants'
@@ -60,8 +60,7 @@ interface SwapProps {
 export function Swap({ onTokenChange, onOutputTokenChange }: SwapProps) {
   const { replace } = useRouter()
   const { walletAddress } = useCurrentWallet()
-  const { ready, wallets } = useSolanaWallets()
-  const wallet = wallets[0]
+  const wallet = useWallet()
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const [inputTokenMint, setInputTokenMint] = useState<string>(SOL_MINT)
@@ -110,7 +109,7 @@ export function Swap({ onTokenChange, onOutputTokenChange }: SwapProps) {
         swapMode === ESwapMode.EXACT_OUT
           ? inputTokenDecimals
           : outputTokenDecimals,
-      wallet: !ready || !wallet ? null : wallet,
+      wallet: !wallet.connected ? null : wallet,
       walletAddress: walletAddress,
       swapMode: swapMode,
     })

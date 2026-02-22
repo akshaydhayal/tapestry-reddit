@@ -1,24 +1,24 @@
 'use client'
 
 import { useGetProfiles } from '@/components/auth/hooks/use-get-profiles'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useEffect, useState } from 'react'
 
 export function useCurrentWallet() {
   const [walletAddress, setWalletAddress] = useState<string>('')
-  const { user, authenticated, ready } = usePrivy()
+  const { publicKey, connected } = useWallet()
 
   const { profiles, loading } = useGetProfiles({
     walletAddress: walletAddress || '',
   })
 
   useEffect(() => {
-    if (authenticated && ready && user && user.wallet) {
-      setWalletAddress(user.wallet?.address)
+    if (connected && publicKey) {
+      setWalletAddress(publicKey.toBase58())
     } else {
       setWalletAddress('')
     }
-  }, [user, authenticated, ready])
+  }, [publicKey, connected])
 
   return {
     walletIsConnected: !(walletAddress === ''),

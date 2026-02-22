@@ -10,7 +10,7 @@ import { useCreateProfile } from '@/components/profile/hooks/use-create-profile'
 import { useGetIdentities } from '@/components/profile/hooks/use-get-identities'
 import { IProfileList } from '@/models/profile.models'
 import { cn } from '@/utils/utils'
-import { usePrivy } from '@privy-io/react-auth'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { User } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -27,7 +27,7 @@ export function CreateProfile({
   setProfileUsername,
 }: Props) {
   const { walletAddress, loadingMainUsername } = useCurrentWallet()
-  const { logout } = usePrivy()
+  const { disconnect } = useWallet()
 
   const [username, setUsername] = useState('')
   const [selectProfile, setSelectProfile] = useState<IProfileList | null>(null)
@@ -226,7 +226,7 @@ export function CreateProfile({
             className="w-full text-xs underline justify-center"
             variant="ghost"
             onClick={() => {
-              logout()
+              disconnect()
               setCreateProfileDialog(false)
             }}
           >
