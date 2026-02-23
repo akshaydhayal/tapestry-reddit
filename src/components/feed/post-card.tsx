@@ -1,7 +1,7 @@
 import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Heart, MessageCircle, Share2 } from 'lucide-react'
+import { Heart, MessageCircle, Share2, RefreshCw } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -108,112 +108,104 @@ export function PostCard({ post }: { post: PostProps }) {
   }
 
   return (
-    <Card 
+    <article 
       onClick={() => router.push(`/post/${post.id}`)}
-      className="bg-zinc-950/50 backdrop-blur-md border-zinc-800/80 hover:border-zinc-700 transition-colors mb-4 rounded-xl overflow-hidden shadow-lg shadow-black/20 cursor-pointer group"
+      className="border-b border-slate-600 hover:bg-white/[0.03] transition-colors cursor-pointer px-4 pt-3 pb-3 flex gap-3 group"
     >
-      <CardContent className="p-5">
-        <div className="flex items-start gap-4">
-          <Avatar className="h-10 w-10 ring-2 ring-zinc-800 ring-offset-2 ring-offset-black">
-            {post.author.avatarUrl ? (
-              <Image src={post.author.avatarUrl} alt={post.author.username} fill className="object-cover" />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                {post.author.username.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </Avatar>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-zinc-100 group-hover:text-purple-400 transition-colors truncate">{post.author.username}</span>
-                <span className="text-sm text-zinc-500 truncate max-w-[120px]">
-                  {post.author.walletAddress.slice(0,4)}...{post.author.walletAddress.slice(-4)}
-                </span>
-                <span className="text-xs text-zinc-600 px-1">•</span>
-                <span className="text-xs text-zinc-500">{mounted ? new Date(post.createdAt).toLocaleDateString() : '...'}</span>
-              </div>
-              
-              {post.subnet && (
-                <Badge variant="secondary" className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2.5 py-0.5 whitespace-nowrap">
-                  {post.subnet}
-                </Badge>
-              )}
+      <div className="flex-shrink-0 pt-1">
+        <Avatar className="h-10 w-10 ring-0">
+          {post.author.avatarUrl ? (
+            <Image src={post.author.avatarUrl} alt={post.author.username} fill className="object-cover" />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-[#1d9aef] to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+              {post.author.username.charAt(0).toUpperCase()}
             </div>
-
-            <div className="text-zinc-300 mt-2 mb-4 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
-              {post.content}
-            </div>
-
-            {post.imageUrl && (
-              <div className="relative w-full rounded-2xl overflow-hidden border border-zinc-900/50 mt-3 mb-4 shadow-md bg-zinc-950/20">
-                <img 
-                  src={post.imageUrl} 
-                  alt="Post attachment" 
-                  className="w-full h-auto max-h-[500px] object-cover hover:scale-[1.02] transition-transform duration-500 ease-in-out"
-                  onError={(e) => {
-                    // Try to hide broken images completely
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                  }}
-                />
-              </div>
-            )}
-
-            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-zinc-900/50">
-              <button 
-                onClick={(e) => handleLike(e)}
-                disabled={isLiking || !mounted}
-                className={`flex items-center gap-2 text-sm transition-colors ${isLiked ? 'text-pink-500' : 'text-zinc-500 hover:text-pink-400'}`}
-              >
-                {mounted && <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />}
-                <span>{likesCount}</span>
-              </button>
-              
-              <button 
-                onClick={(e) => { e.stopPropagation(); setShowCommentBox(!showCommentBox); }}
-                className="flex items-center gap-2 text-sm text-zinc-500 hover:text-blue-400 transition-colors"
-                disabled={!mounted}
-              >
-                {mounted && <MessageCircle className="h-4 w-4" />}
-                <span>{commentsCount}</span>
-              </button>
-
-              <button 
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors ml-auto"
-                disabled={!mounted}
-              >
-                {mounted && <Share2 className="h-4 w-4" />}
-              </button>
-            </div>
-
-            {showCommentBox && (
-              <div 
-                className="mt-4 flex gap-2 w-full"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  type="text"
-                  placeholder="Write a comment..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="flex-1 bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors"
-                />
-                <button
-                  onClick={(e) => handleComment(e)}
-                  disabled={isCommenting || !commentText.trim()}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50"
-                >
-                  {isCommenting ? '...' : 'Reply'}
-                </button>
-              </div>
-            )}
-            
+          )}
+        </Avatar>
+      </div>
+      
+      <div className="flex-1 min-w-0 pb-1">
+        <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center gap-1.5 overflow-hidden">
+            <span className="font-bold text-[15px] text-white hover:underline truncate">{post.author.username}</span>
+            <span className="text-[15px] text-zinc-500 truncate max-w-[120px]">
+              @{post.author.walletAddress.slice(0,4)}...{post.author.walletAddress.slice(-4)}
+            </span>
+            <span className="text-[15px] text-zinc-500">·</span>
+            <span className="text-[15px] text-zinc-500 hover:underline">{mounted ? new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '...'}</span>
           </div>
+          
+          {post.subnet && (
+            <Badge variant="secondary" className="bg-[#1d9aef]/10 text-[#1d9aef] border border-transparent px-2 py-0 hover:bg-[#1d9aef]/20 transition-colors whitespace-nowrap text-xs ml-2">
+              {post.subnet}
+            </Badge>
+          )}
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="text-[15px] text-zinc-100 mb-3 leading-normal whitespace-pre-wrap break-words">
+          {post.content}
+        </div>
+
+        {post.imageUrl && (
+          <div className="relative w-full rounded-2xl overflow-hidden border border-zinc-800 mt-2 mb-3 bg-zinc-950">
+            <img 
+              src={post.imageUrl} 
+              alt="Post attachment" 
+              className="w-full h-auto max-h-[500px] object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
+              }}
+            />
+          </div>
+        )}
+
+        <div className="flex items-center gap-12 mt-1 text-zinc-500 group-hover:text-zinc-500">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowCommentBox(!showCommentBox); }}
+            className="flex items-center gap-2 text-[13px] hover:text-[#1d9aef] transition-colors group/btn"
+            disabled={!mounted}
+          >
+            <div className="p-2 rounded-full group-hover/btn:bg-[#1d9aef]/10 transition-colors -ml-2">
+               {mounted && <MessageCircle className="h-[18px] w-[18px]" />}
+            </div>
+            <span>{commentsCount}</span>
+          </button>
+
+          <button 
+            onClick={(e) => handleLike(e)}
+            disabled={isLiking || !mounted}
+            className={`flex items-center gap-2 text-[13px] transition-colors group/btn ${isLiked ? 'text-[#f91880]' : 'hover:text-[#f91880]'}`}
+          >
+            <div className={`p-2 rounded-full transition-colors ${isLiked ? '' : 'group-hover/btn:bg-[#f91880]/10'}`}>
+                {mounted && <Heart className={`h-[18px] w-[18px] ${isLiked ? 'fill-current' : ''}`} />}
+            </div>
+            <span className={isLiked ? '' : ''}>{likesCount}</span>
+          </button>
+        </div>
+
+        {showCommentBox && (
+          <div 
+            className="mt-3 flex gap-2 w-full pt-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="text"
+              placeholder="Post your reply"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              className="flex-1 bg-transparent border-b border-zinc-800 px-1 py-2 text-[15px] text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#1d9aef] transition-colors"
+            />
+            <button
+              onClick={(e) => handleComment(e)}
+              disabled={isCommenting || !commentText.trim()}
+              className="px-4 py-1.5 bg-[#1d9aef] hover:bg-[#1a8cd8] text-white text-sm font-bold rounded-full transition-colors disabled:opacity-50 mt-1"
+            >
+              {isCommenting ? '...' : 'Reply'}
+            </button>
+          </div>
+        )}
+      </div>
+    </article>
   )
 }

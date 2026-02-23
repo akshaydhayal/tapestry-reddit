@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-black text-white`} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-black text-white selection:bg-indigo-500/30`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -30,9 +30,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SolanaWalletProvider>
-            <Header />
-            <Toaster />
-            <div className="max-w-7xl mx-auto pt-0 pb-0">{children}</div>
+            <div className="flex justify-center w-full min-h-screen">
+               <div className="w-full max-w-[1265px] flex justify-between">
+                 <Header />
+                 <Toaster />
+                 <div className="flex-1 flex max-w-[990px]">{children}</div>
+               </div>
+            </div>
           </SolanaWalletProvider>
         </ThemeProvider>
       </body>

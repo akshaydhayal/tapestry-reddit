@@ -80,76 +80,90 @@ export function Header() {
   }, [profiles, isProfileCreated, profileUsername, setProfileData])
 
   return (
-    <>
-      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between w-full py-3">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between px-4">
-          <Link 
-            href="/" 
-            className="hover:opacity-80"
+    <header className="hidden sm:flex flex-col w-[88px] xl:w-[275px] h-screen sticky top-0 pb-4 pt-1 px-2 xl:px-4 border-r border-zinc-900 justify-start shrink-0">
+      <div className="flex flex-col gap-2 xl:gap-1 items-center xl:items-start w-full">
+        <Link 
+          href="/" 
+          className="w-14 h-14 xl:w-16 xl:h-16 flex items-center justify-center rounded-full hover:bg-zinc-900 transition-colors mb-2 text-3xl font-bold font-serif"
+          title="Tapestry"
+        >
+          X
+        </Link>
+
+        <nav className="flex flex-col gap-2 w-full items-center xl:items-start">
+          <Link
+            href="/"
+            className="flex items-center gap-5 p-3 xl:pr-6 rounded-full hover:bg-zinc-900 transition-colors w-fit xl:w-auto"
           >
-            <h1 className="text-2xl font-bold ml-4">Tapestry Reddit</h1>
+            {mounted && <Home className="h-7 w-7" strokeWidth={2.5} />}
+            <span className="hidden xl:inline text-xl font-medium">Home</span>
+          </Link>
+          
+          <Link
+            href="/subnets"
+            className="flex items-center gap-5 p-3 xl:pr-6 rounded-full hover:bg-zinc-900 transition-colors w-fit xl:w-auto"
+          >
+            {mounted && <RefreshCw className="h-7 w-7" strokeWidth={2.5} />}
+            <span className="hidden xl:inline text-xl font-medium">Explore</span>
           </Link>
 
-          <nav className="flex items-center space-x-8">
+          {mounted && mainUsername && (
             <Link
-              href="/"
-              className="flex items-center hover:opacity-80 transition-opacity"
+              href={`/${mainUsername}`}
+              className="flex items-center gap-5 p-3 xl:pr-6 rounded-full hover:bg-zinc-900 transition-colors w-fit xl:w-auto"
             >
-              {mounted && <Home className="h-4 w-4 mr-2" />}
-              <span>Global Feed</span>
+              <User className="h-7 w-7" strokeWidth={2.5} />
+              <span className="hidden xl:inline text-xl font-medium">Profile</span>
             </Link>
-
-            <Link
-              href="/subnets"
-              className="flex items-center hover:opacity-80 transition-opacity"
-            >
-              {mounted && <RefreshCw className="h-4 w-4 mr-2" />}
-              <span>Subnets</span>
-            </Link>
-
-            <div className="flex items-center space-x-4">
-              {/* Only show profile stuff when the wallet is connected */}
-              {mounted && connected && (
-                mainUsername ? (
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.push(`/${mainUsername}`)}
-                    className="space-x-2"
-                  >
-                    {profileImage ? (
-                      <Image
-                        src={profileImage}
-                        width={24}
-                        height={24}
-                        alt="avatar"
-                        className="object-cover rounded-full"
-                        unoptimized
-                      />
-                    ) : (
-                      <User size={16} />
-                    )}
-                    <span className="truncate font-bold">{mainUsername}</span>
-                  </Button>
-                ) : (
-                  <CreateProfileContainer
-                    setIsProfileCreated={setIsProfileCreated}
-                    setProfileUsername={setProfileUsername}
-                  />
-                )
-              )}
-
-              {/* Always render the Solana Wallet Adapter native button */}
-              {mounted && (
-                <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 transition-colors auto-min-w !rounded-lg" />
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <DialectNotificationComponent />
-            </div>
-          </nav>
-        </div>
+          )}
+        </nav>
       </div>
-    </>
+
+      <div className="flex flex-col items-center xl:items-start gap-4 mb-2 mt-12 relative w-full">
+         <div className="hidden xl:block ml-2 w-full">
+            <DialectNotificationComponent />
+         </div>
+          {mounted && connected && (
+            mainUsername ? (
+              <Button
+                variant="ghost"
+                onClick={() => router.push(`/${mainUsername}`)}
+                className="w-full flex items-center xl:justify-start justify-center p-3 xl:px-4 rounded-full hover:bg-zinc-900 transition-colors h-auto gap-3"
+              >
+                {profileImage ? (
+                  <Image
+                    src={profileImage}
+                    width={40}
+                    height={40}
+                    alt="avatar"
+                    className="object-cover rounded-full min-w-[40px] h-[40px]"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="min-w-[40px] h-[40px] bg-indigo-500 rounded-full flex items-center justify-center text-white">
+                     <User size={20} />
+                  </div>
+                )}
+                <div className="hidden xl:flex flex-col items-start min-w-0 pr-2">
+                   <span className="font-bold text-base truncate w-full text-white">{mainUsername}</span>
+                   <span className="text-zinc-500 text-sm truncate w-full">@{walletAddress?.slice(0, 8)}</span>
+                </div>
+              </Button>
+            ) : (
+              <div className="flex w-full justify-center xl:justify-start xl:px-2">
+                 <CreateProfileContainer
+                   setIsProfileCreated={setIsProfileCreated}
+                   setProfileUsername={setProfileUsername}
+                 />
+              </div>
+            )
+          )}
+          {mounted && (
+            <div className="flex w-[80%] xl:w-full justify-center xl:px-2 mt-2">
+              <WalletMultiButton className="!bg-[#1d9aef] hover:!bg-[#1a8cd8] transition-colors xl:!w-full !rounded-full !h-12 flex justify-center text-sm font-bold truncate" />
+            </div>
+          )}
+      </div>
+    </header>
   )
 }

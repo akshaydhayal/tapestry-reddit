@@ -40,12 +40,12 @@ export function WhoToFollow() {
 
   return (
     <div className="pt-6 border-t border-zinc-800/50 mt-6 relative overflow-hidden group">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="font-bold text-base text-zinc-100 italic flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-4 px-4 pt-2">
+        <h3 className="font-extrabold text-xl text-white flex items-center gap-2">
           {suggestedProfiles && suggestedProfiles.length > 0 ? (
-            <>Who to follow <Sparkles className="h-4 w-4 text-yellow-500/80" /></>
+            <>Who to follow</>
           ) : (
-            <>Discover People <Sparkles className="h-4 w-4 text-purple-500/80" /></>
+            <>Discover People</>
           )}
         </h3>
       </div>

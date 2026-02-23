@@ -3,18 +3,24 @@
 import { Card } from '@/components/common/card'
 import { Feed } from '@/components/feed/feed'
 import { PostCard, PostProps } from '@/components/feed/post-card'
+import { RightSidebar } from '@/components/common/right-sidebar'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useProfileStore } from '@/store/profile'
+import { Avatar } from '@/components/ui/avatar'
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { mainUsername, profileImage } = useProfileStore()
   const [post, setPost] = useState<PostProps | null>(null)
   const [comments, setComments] = useState<PostProps[]>([])
   const [isLoadingPost, setIsLoadingPost] = useState(true)
   const [isLoadingComments, setIsLoadingComments] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [commentText, setCommentText] = useState('')
+  const [isCommenting, setIsCommenting] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -112,6 +118,47 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     }
   }, [params.id])
 
+  const handleComment = async () => {
+    if (!mainUsername || !commentText.trim() || isCommenting || !post) return
+
+    setIsCommenting(true)
+    try {
+      const res = await fetch('/api/contents/comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentId: post.id,
+          profileId: mainUsername,
+          text: commentText
+        })
+      })
+
+      if (!res.ok) throw new Error('Failed to post comment')
+      
+      const newComment: PostProps = {
+        id: Date.now().toString(),
+        author: {
+          username: mainUsername,
+          avatarUrl: profileImage || '',
+          walletAddress: mainUsername,
+        },
+        content: commentText,
+        likesCount: 0,
+        commentsCount: 0,
+        createdAt: new Date().toISOString(),
+        isLiked: false
+      }
+
+      setComments(prev => [newComment, ...prev])
+      setCommentText('')
+      setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : prev)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsCommenting(false)
+    }
+  }
+
   if (error) {
     return (
       <div className="flex justify-center items-center h-full min-h-[50vh] flex-col gap-4">
@@ -124,42 +171,75 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-24">
-      <div className="mb-6 flex items-center gap-4">
-        <button 
-          onClick={() => router.back()}
-          className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
-        >
-          {mounted && <ArrowLeft className="w-5 h-5" />}
-        </button>
-        <h1 className="text-2xl font-bold">Post Thread</h1>
-      </div>
-
-      {isLoadingPost ? (
-        <div className="flex justify-center items-center h-48">
-          {mounted && <Loader2 className="w-8 h-8 animate-spin text-purple-500" />}
+    <div className="flex w-full justify-center lg:justify-start lg:gap-8 max-w-[1265px] mx-auto relative">
+      <main className="w-full sm:w-[600px] min-h-[200vh] border-x border-zinc-900 shrink-0 pb-24">
+        <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-zinc-900 flex items-center gap-6 px-4 py-3">
+          <button 
+            onClick={() => router.back()}
+            className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-white"
+          >
+            {mounted && <ArrowLeft className="w-5 h-5" />}
+          </button>
+          <h1 className="text-xl font-bold text-white">Post Thread</h1>
         </div>
-      ) : post ? (
-        <>
-          <PostCard post={post} />
-          
-          <div className="mt-8">
-            <h3 className="text-lg font-bold mb-4 px-2 border-b border-zinc-800 pb-2">Comments</h3>
-            {isLoadingComments ? (
-              <div className="flex justify-center items-center h-32">
-                {mounted && <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />}
-              </div>
-            ) : comments.length > 0 ? (
-              <Feed posts={comments} />
-            ) : (
-              <div className="text-center py-12 text-zinc-500 bg-zinc-950/30 rounded-xl border border-zinc-800/50">
-                <p className="text-lg">No comments yet</p>
-                <p className="text-sm mt-2">Be the first to share your thoughts!</p>
-              </div>
-            )}
+
+        {isLoadingPost ? (
+          <div className="flex justify-center items-center h-48">
+            {mounted && <Loader2 className="w-8 h-8 animate-spin text-[#1d9aef]" />}
           </div>
-        </>
-      ) : null}
+        ) : post ? (
+          <>
+            <PostCard post={post} />
+            
+            <div className="border-b border-t border-slate-500 px-4 py-3 flex gap-3">
+              <Avatar className="h-10 w-10 ring-0">
+                {profileImage ? (
+                  <img src={profileImage} alt={mainUsername || 'Profile'} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-[#1d9aef] to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                    {mainUsername ? mainUsername.charAt(0).toUpperCase() : '?'}
+                  </div>
+                )}
+              </Avatar>
+              
+              <div className="flex-1 flex items-center justify-between gap-4">
+                <input
+                  type="text"
+                  placeholder="Post your reply"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="flex-1 bg-transparent border-none text-[15px] sm:text-[20px] text-white placeholder:text-zinc-500 focus:outline-none"
+                  disabled={isCommenting}
+                />
+                <button
+                  onClick={handleComment}
+                  disabled={isCommenting || !commentText.trim()}
+                  className="px-4 py-1.5 bg-[#1d9aef] hover:bg-[#1a8cd8] text-white text-[15px] font-bold rounded-full transition-colors disabled:opacity-50"
+                >
+                  {isCommenting ? '...' : 'Reply'}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              {isLoadingComments ? (
+                <div className="flex justify-center items-center h-32">
+                  {mounted && <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />}
+                </div>
+              ) : comments.length > 0 ? (
+                <Feed posts={comments} />
+              ) : (
+                <div className="text-center py-12 text-zinc-500">
+                  <p className="text-lg">No comments yet</p>
+                  <p className="text-sm mt-2">Be the first to share your thoughts!</p>
+                </div>
+              )}
+            </div>
+          </>
+        ) : null}
+      </main>
+
+      <RightSidebar />
     </div>
   )
 }

@@ -49,6 +49,7 @@ const initialDummyPosts: PostProps[] = [
 ]
 
 import { WhoToFollow } from '@/components/feed/who-to-follow'
+import { RightSidebar } from '@/components/common/right-sidebar'
 
 export default function HomeFeedPage() {
   const [posts, setPosts] = useState<PostProps[]>([])
@@ -118,6 +119,7 @@ export default function HomeFeedPage() {
             id: item.content.id,
             author: {
               username: item.authorProfile.username,
+              avatarUrl: item.authorProfile.image,
               walletAddress: item.authorProfile.id,
             },
             content: contentText || 'No content',
@@ -193,73 +195,42 @@ export default function HomeFeedPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
-      {/* Sidebar / Left Column (Visible on Desktop) */}
-      <aside className="hidden lg:flex w-56 flex-col fixed h-screen pt-4 border-r border-zinc-800 px-4">
-        <h2 className="text-xl font-bold mb-6 text-zinc-100 px-2">Feeds</h2>
-        <nav className="flex flex-col gap-2">
-          <button
-            onClick={() => setFeedType('global')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${feedType === 'global' ? 'bg-indigo-600 shadow-indigo-500/20 text-white' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
-          >
-            {mounted && <Globe className="h-5 w-5" />}
-            <span className="font-medium text-lg">Global</span>
-          </button>
-          <button 
-            onClick={() => setFeedType('following')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${feedType === 'following' ? 'bg-indigo-600 shadow-indigo-500/20 text-white' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
-            disabled={!mounted || !connected}
-          >
-            {mounted && <Users className="h-5 w-5" />}
-            <span className="font-medium text-lg">Following</span>
-          </button>
-        </nav>
-        
-        <div className="mt-8">
-          <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4 px-2">Popular Subnets</h3>
-          <ul className="flex flex-col gap-2">
-            {[
-              {tag: 'SolanaDevs', gate: 'Rep > 100'}, 
-              {tag: 'DeFiDegens', gate: 'Public'}, 
-              {tag: 'NFTWhales', gate: 'NFT Req'}
-            ].map(sub => (
-              <li key={sub.tag}>
-                <a href={`/r/${sub.tag}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-900 group cursor-pointer">
-                  <span className="text-zinc-300 group-hover:text-purple-400 transition-colors">#{sub.tag}</span>
-                  <span className="text-xs text-zinc-600 font-mono bg-zinc-950 px-1.5 py-0.5 rounded">{sub.gate}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </aside>
-
+    <div className="flex w-full min-h-screen">
       {/* Main Feed Content */}
-      <main className="flex-1 lg:ml-56 max-w-3xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        <header className="mb-6 lg:hidden flex gap-4 border-b border-zinc-800 pb-4">
-          <button 
-            onClick={() => setFeedType('global')}
-            className={`pb-2 border-b-2 font-medium ${feedType === 'global' ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-500'}`}
-          >
-            Global
-          </button>
-          <button 
-            onClick={() => setFeedType('following')}
-            className={`pb-2 border-b-2 font-medium ${feedType === 'following' ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-500'}`}
-          >
-            Following
-          </button>
+      <main className="flex-1 max-w-[600px] w-full border-x border-zinc-900 pb-20">
+        <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-zinc-900 flex flex-col pt-2 cursor-pointer">
+          <div className="flex w-full h-14">
+            <button 
+              onClick={() => setFeedType('global')}
+              className="flex-1 flex justify-center items-center hover:bg-zinc-900/50 transition-colors relative font-bold text-[15px] group"
+            >
+              <div className="flex flex-col items-center h-full justify-center">
+                <span className={`${feedType === 'global' ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'}`}>For you</span>
+                {feedType === 'global' && (
+                  <div className="absolute bottom-0 h-1 w-14 bg-[#1d9aef] rounded-full"></div>
+                )}
+              </div>
+            </button>
+            <button 
+              onClick={() => setFeedType('following')}
+              className="flex-1 flex justify-center items-center hover:bg-zinc-900/50 transition-colors relative font-bold text-[15px] group"
+            >
+               <div className="flex flex-col items-center h-full justify-center">
+                <span className={`${feedType === 'following' ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'}`}>Following</span>
+                {feedType === 'following' && (
+                  <div className="absolute bottom-0 h-1 w-20 bg-[#1d9aef] rounded-full"></div>
+                )}
+              </div>
+            </button>
+          </div>
         </header>
 
         <CreatePost onSubmit={handleCreatePost} isLoading={isSubmitting} />
         
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            {feedType === 'global' ? '🌎 Global Feed' : '👥 Following'}
-          </h2>
+        <div className="w-full">
           {isLoadingFeed ? (
-            <div className="flex justify-center items-center py-20">
-              {mounted && <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />}
+            <div className="flex justify-center items-center py-10">
+              {mounted && <Loader2 className="h-7 w-7 text-[#1d9aef] animate-spin" />}
             </div>
           ) : (
             <Feed posts={posts} />
@@ -267,32 +238,8 @@ export default function HomeFeedPage() {
         </div>
       </main>
 
-      {/* Right Column / Suggested (Visible on Desktop) */}
-      <aside className="hidden xl:block w-80 pl-8 pt-8 relative">
-        <div className="sticky top-8 bg-zinc-950/50 border border-zinc-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-md">
-          <h3 className="font-bold text-lg mb-4 text-zinc-100">Your Reputation</h3>
-          {mounted && connected ? (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-end gap-2">
-                <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">842</span>
-                <span className="text-zinc-500 mb-1 font-medium">FairScore</span>
-              </div>
-              <p className="text-sm text-zinc-400">You are in the top 5% of active Solana wallets. You have access to all gated subnets!</p>
-              <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden mt-2">
-                <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 w-[85%] rounded-full relative">
-                  <div className="absolute inset-0 bg-white/20 w-full animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm text-zinc-400">
-              {mounted ? "Connect your wallet to calculate your on-chain FairScale reputation score and unlock gated communities." : "Loading reputation..."}
-            </div>
-          )}
-          
-          {mounted && <WhoToFollow />}
-        </div>
-      </aside>
+      {/* Right Sidebar Component */}
+      <RightSidebar />
     </div>
   )
 }
