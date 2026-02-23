@@ -23,13 +23,18 @@ export interface PostProps {
 }
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useProfileStore } from '@/store/profile'
 
 export function PostCard({ post }: { post: PostProps }) {
   const router = useRouter()
   const { mainUsername } = useProfileStore()
+  const [mounted, setMounted] = useState(false)
   
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const [isLiked, setIsLiked] = useState<boolean>(!!post.isLiked)
   const [likesCount, setLikesCount] = useState<number>(post.likesCount)
   const [isLiking, setIsLiking] = useState(false)
@@ -127,7 +132,7 @@ export function PostCard({ post }: { post: PostProps }) {
                   {post.author.walletAddress.slice(0,4)}...{post.author.walletAddress.slice(-4)}
                 </span>
                 <span className="text-xs text-zinc-600 px-1">•</span>
-                <span className="text-xs text-zinc-500">{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span className="text-xs text-zinc-500">{mounted ? new Date(post.createdAt).toLocaleDateString() : '...'}</span>
               </div>
               
               {post.subnet && (
@@ -159,26 +164,28 @@ export function PostCard({ post }: { post: PostProps }) {
             <div className="flex items-center gap-6 mt-4 pt-4 border-t border-zinc-900/50">
               <button 
                 onClick={(e) => handleLike(e)}
-                disabled={isLiking}
+                disabled={isLiking || !mounted}
                 className={`flex items-center gap-2 text-sm transition-colors ${isLiked ? 'text-pink-500' : 'text-zinc-500 hover:text-pink-400'}`}
               >
-                <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                {mounted && <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />}
                 <span>{likesCount}</span>
               </button>
               
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowCommentBox(!showCommentBox); }}
                 className="flex items-center gap-2 text-sm text-zinc-500 hover:text-blue-400 transition-colors"
+                disabled={!mounted}
               >
-                <MessageCircle className="h-4 w-4" />
+                {mounted && <MessageCircle className="h-4 w-4" />}
                 <span>{commentsCount}</span>
               </button>
 
               <button 
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors ml-auto"
+                disabled={!mounted}
               >
-                <Share2 className="h-4 w-4" />
+                {mounted && <Share2 className="h-4 w-4" />}
               </button>
             </div>
 

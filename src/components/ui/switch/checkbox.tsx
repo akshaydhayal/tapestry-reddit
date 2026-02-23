@@ -4,6 +4,7 @@ import { cn } from '@/utils/utils'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import { cva, VariantProps } from 'class-variance-authority'
 import { Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import * as React from 'react'
 
 const checkboxVariants = cva(
@@ -39,7 +40,15 @@ const Checkbox = React.forwardRef<
     <CheckboxPrimitive.Indicator
       className={cn('flex items-center justify-center text-current')}
     >
-      <Check className="h-full w-full" />
+      <div className="flex items-center justify-center w-full h-full">
+        {(() => {
+          const [mounted, setMounted] = React.useState(false)
+          React.useEffect(() => {
+            setMounted(true)
+          }, [])
+          return mounted ? <Check className="h-full w-full" /> : null
+        })()}
+      </div>
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ))

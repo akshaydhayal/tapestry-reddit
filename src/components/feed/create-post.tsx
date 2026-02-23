@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/common/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,7 +19,12 @@ export function CreatePost({
   const [subnet, setSubnet] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [showImageInput, setShowImageInput] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { connected } = useWallet()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = () => {
     if (!content.trim() || !connected) return
@@ -38,12 +43,12 @@ export function CreatePost({
     <Card className="bg-zinc-950 border-zinc-800 shadow-xl overflow-hidden mb-6">
       <CardHeader className="p-4 pb-2 flex flex-row items-center gap-3">
         <Avatar className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full" />
-        <span className="font-semibold text-zinc-200">What's on your mind?</span>
+        <span className="font-semibold text-zinc-200">{mounted ? "What's on your mind?" : "Loading..."}</span>
       </CardHeader>
       
       <CardContent className="px-4 pb-2">
         <Textarea 
-          placeholder={connected ? "Share your thoughts, projects, or alpha..." : "Please connect your wallet to post..."}
+          placeholder={mounted && connected ? "Share your thoughts, projects, or alpha..." : (mounted ? "Please connect your wallet to post..." : "Loading...")}
           className="min-h-[100px] bg-transparent border-none text-zinc-100 placeholder:text-zinc-600 resize-none focus-visible:ring-0 p-0 text-lg"
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -91,8 +96,12 @@ export function CreatePost({
       <CardFooter className="px-4 py-3 flex items-center justify-between border-t border-zinc-900 bg-zinc-950/80">
         <div className="flex items-center gap-2">
           <div className="relative group">
-            <Button variant="ghost" className="h-8 w-8 p-0 text-zinc-500 hover:text-purple-400 hover:bg-zinc-900 rounded-full transition-colors flex items-center justify-center">
-              <Hash className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              className="h-8 w-8 p-0 text-zinc-500 hover:text-purple-400 hover:bg-zinc-900 rounded-full transition-colors flex items-center justify-center"
+              disabled={!mounted}
+            >
+              {mounted && <Hash className="h-4 w-4" />}
             </Button>
             {/* Simple popup for inputting subnet */}
             <div className="absolute top-full left-0 mt-2 p-2 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 w-48">
@@ -111,19 +120,20 @@ export function CreatePost({
             variant="ghost" 
             onClick={() => setShowImageInput(!showImageInput)}
             className={`h-8 w-8 p-0 rounded-full transition-colors flex items-center justify-center ${showImageInput || imageUrl ? 'text-blue-400 bg-blue-500/10' : 'text-zinc-500 hover:text-blue-400 hover:bg-zinc-900'}`}
+            disabled={!mounted}
           >
-            <ImageIcon className="h-4 w-4" />
+            {mounted && <ImageIcon className="h-4 w-4" />}
           </Button>
         </div>
 
         <Button 
           onClick={handleSubmit} 
-          disabled={!content.trim() || !connected || isLoading}
+          disabled={!content.trim() || !connected || isLoading || !mounted}
           className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-5 py-1.5 h-auto text-sm font-semibold transition-all shadow-lg shadow-indigo-900/20 disabled:opacity-50 disabled:shadow-none"
         >
           {isLoading ? 'Posting...' : (
             <span className="flex items-center gap-2">
-              Post <Send className="h-3 w-3" />
+              Post {mounted && <Send className="h-3 w-3" />}
             </span>
           )}
         </Button>

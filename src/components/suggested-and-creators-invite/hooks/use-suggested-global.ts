@@ -27,7 +27,11 @@ export const useSuggestedGlobal = () => {
       }
 
       const data = await response.json()
-      setProfiles(data)
+      // Make it robust: handle if it's an object with profiles array or contents array
+      const profilesArray = Array.isArray(data) 
+        ? data 
+        : (data.profiles || data.contents || data.suggestedProfiles || []);
+      setProfiles(profilesArray)
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred')
     } finally {

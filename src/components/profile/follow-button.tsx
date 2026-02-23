@@ -6,7 +6,9 @@ import { LoadCircle } from '@/components/common/load-circle'
 import { useFollowUser } from '@/components/profile/hooks/use-follow-user'
 import { useGetFollowersState } from '@/components/profile/hooks/use-get-follower-state'
 import { useCurrentWallet } from '../auth/hooks/use-current-wallet'
+import { useFollowEvent } from '@/hooks/use-follow-event'
 import { useUnfollowUser } from './hooks/use-unfollow-user'
+import { useState, useEffect } from 'react'
 
 interface Props {
   username: string
@@ -18,25 +20,44 @@ export function FollowButton({ username }: Props) {
   const { followUser, loading, error, success } = useFollowUser()
   const { unfollowUser } = useUnfollowUser()
 
-  const { data } = useGetFollowersState({
+  const { data, refetch } = useGetFollowersState({
     followeeUsername: username,
     followerUsername: mainUsername || '',
   })
 
-  const isFollowing = data?.isFollowing
+  const { emitFollowChange } = useFollowEvent(refetch)
+  const [localIsFollowing, setLocalIsFollowing] = useState<boolean | undefined>(undefined)
+
+  useEffect(() => {
+    if (data?.isFollowing !== undefined) {
+      setLocalIsFollowing(data.isFollowing)
+    }
+  }, [data?.isFollowing])
+
+  const isFollowing = localIsFollowing ?? data?.isFollowing
 
   const handleFollowToggleClicked = async () => {
     if (mainUsername && username) {
-      if (isFollowing) {
-        await unfollowUser({
-          followerUsername: mainUsername,
-          followeeUsername: username,
-        })
-      } else {
-        await followUser({
-          followerUsername: mainUsername,
-          followeeUsername: username,
-        })
+      const originalState = isFollowing
+      setLocalIsFollowing(!originalState) // Optimistic update
+      
+      try {
+        if (originalState) {
+          await unfollowUser({
+            followerUsername: mainUsername,
+            followeeUsername: username,
+          })
+        } else {
+          await followUser({
+            followerUsername: mainUsername,
+            followeeUsername: username,
+          })
+        }
+        console.log('Follow action successful, emitting event...')
+        emitFollowChange()
+      } catch (err) {
+        setLocalIsFollowing(originalState) // Rollback
+        console.error('Follow toggle failed:', err)
       }
     } else {
       console.error('No main username or followee username')

@@ -4,6 +4,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { Hash, Lock, Globe, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
 
 const SUBNETS = [
   {
@@ -42,6 +43,11 @@ const SUBNETS = [
 
 export default function SubnetsDirectory() {
   const { connected } = useWallet()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <div className="min-h-screen bg-black text-white p-4 sm:p-6 lg:p-8">
@@ -67,7 +73,7 @@ export default function SubnetsDirectory() {
                       </div>
                       <div>
                         <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-1">
-                          <Hash className="h-4 w-4 text-purple-400" />
+                          {mounted && <Hash className="h-4 w-4 text-purple-400" />}
                           {subnet.name}
                         </h2>
                         <span className="text-sm text-zinc-500 font-medium">
@@ -78,11 +84,11 @@ export default function SubnetsDirectory() {
                     
                     {subnet.type === 'restricted' ? (
                       <div className="bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1 flex items-center gap-1.5 text-xs font-semibold text-amber-400/90 shadow-sm">
-                        <Lock className="h-3 w-3" /> Gated
+                        {mounted && <Lock className="h-3 w-3" />} Gated
                       </div>
                     ) : (
                       <div className="bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1 flex items-center gap-1.5 text-xs font-semibold text-emerald-400/90 shadow-sm">
-                        <Globe className="h-3 w-3" /> Public
+                        {mounted && <Globe className="h-3 w-3" />} Public
                       </div>
                     )}
                   </div>
@@ -94,13 +100,13 @@ export default function SubnetsDirectory() {
                   <div className="pt-4 border-t border-zinc-900/50 flex items-center justify-between mt-auto">
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-zinc-600 uppercase tracking-widest font-semibold flex items-center gap-1.5 bg-zinc-950 px-2 py-1 rounded">
-                        {subnet.type === 'restricted' ? <Lock className="h-3 w-3 text-zinc-600" /> : <Globe className="h-3 w-3 text-zinc-600" />}
+                        {subnet.type === 'restricted' ? (mounted && <Lock className="h-3 w-3 text-zinc-600" />) : (mounted && <Globe className="h-3 w-3 text-zinc-600" />)}
                         {subnet.gate}
                       </span>
                     </div>
                     
                     <div className="p-2 rounded-full bg-zinc-900 text-zinc-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                      <ArrowRight className="h-4 w-4" />
+                      {mounted && <ArrowRight className="h-4 w-4" />}
                     </div>
                   </div>
                 </CardContent>

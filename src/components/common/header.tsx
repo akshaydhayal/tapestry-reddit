@@ -36,8 +36,13 @@ export function Header() {
   const { connected, disconnect } = useWallet()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const dropdownRef = useRef(null)
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address)
@@ -76,13 +81,13 @@ export function Header() {
 
   return (
     <>
-      <div className="border-b-1 border-muted flex items-center justify-center w-full p-3">
-        <div className="max-w-6xl w-full flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between w-full py-3">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between px-4">
           <Link 
             href="/" 
             className="hover:opacity-80"
           >
-            <h1 className="text-2xl font-bold">Tapestry Reddit</h1>
+            <h1 className="text-2xl font-bold ml-4">Tapestry Reddit</h1>
           </Link>
 
           <nav className="flex items-center space-x-8">
@@ -90,7 +95,7 @@ export function Header() {
               href="/"
               className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <Home className="h-4 w-4 mr-2" />
+              {mounted && <Home className="h-4 w-4 mr-2" />}
               <span>Global Feed</span>
             </Link>
 
@@ -98,13 +103,13 @@ export function Header() {
               href="/subnets"
               className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              {mounted && <RefreshCw className="h-4 w-4 mr-2" />}
               <span>Subnets</span>
             </Link>
 
             <div className="flex items-center space-x-4">
               {/* Only show profile stuff when the wallet is connected */}
-              {connected && (
+              {mounted && connected && (
                 mainUsername ? (
                   <Button
                     variant="ghost"
@@ -123,7 +128,7 @@ export function Header() {
                     ) : (
                       <User size={16} />
                     )}
-                    <p className="truncate font-bold">{mainUsername}</p>
+                    <span className="truncate font-bold">{mainUsername}</span>
                   </Button>
                 ) : (
                   <CreateProfileContainer
@@ -134,7 +139,9 @@ export function Header() {
               )}
 
               {/* Always render the Solana Wallet Adapter native button */}
-              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 transition-colors auto-min-w !rounded-lg" />
+              {mounted && (
+                <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 transition-colors auto-min-w !rounded-lg" />
+              )}
             </div>
 
             <div className="flex items-center gap-2">

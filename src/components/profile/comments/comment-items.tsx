@@ -5,6 +5,7 @@ import { formatRelativeTime } from '@/utils/utils'
 import { User } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 interface CommentItemProps {
   comment: IComments
@@ -17,11 +18,16 @@ export function CommentItem({
   handleLike,
   handleUnlike,
 }: CommentItemProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   return (
     <Card className="w-full space-y-4">
       <div className="flex space-x-1 items-center justify-end text-gray text-sm">
         <p className="pr-2">
-          {formatRelativeTime(comment.comment.created_at)} by
+          {mounted ? formatRelativeTime(comment.comment.created_at) : '...'} by
         </p>
         {comment.author.image ? (
           <Image

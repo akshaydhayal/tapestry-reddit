@@ -14,6 +14,11 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   const [isLoadingPost, setIsLoadingPost] = useState(true)
   const [isLoadingComments, setIsLoadingComments] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const fetchPostAndComments = async () => {
@@ -119,20 +124,20 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto pb-24">
+    <div className="max-w-4xl mx-auto pb-24">
       <div className="mb-6 flex items-center gap-4">
         <button 
           onClick={() => router.back()}
           className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
         >
-          <ArrowLeft className="w-5 h-5" />
+          {mounted && <ArrowLeft className="w-5 h-5" />}
         </button>
         <h1 className="text-2xl font-bold">Post Thread</h1>
       </div>
 
       {isLoadingPost ? (
         <div className="flex justify-center items-center h-48">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+          {mounted && <Loader2 className="w-8 h-8 animate-spin text-purple-500" />}
         </div>
       ) : post ? (
         <>
@@ -142,7 +147,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
             <h3 className="text-lg font-bold mb-4 px-2 border-b border-zinc-800 pb-2">Comments</h3>
             {isLoadingComments ? (
               <div className="flex justify-center items-center h-32">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
+                {mounted && <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />}
               </div>
             ) : comments.length > 0 ? (
               <Feed posts={comments} />

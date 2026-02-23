@@ -17,7 +17,10 @@ export function Profile({ username }: Props) {
   const { data } = useGetProfileInfo({ username })
   const [fairScore, setFairScore] = useState<number | null>(null)
 
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
+    setMounted(true)
     // Mock fetching FairScale API for this user
     setTimeout(() => {
       // Just a random-ish stable score between 100-900 for the demo based on their username length length
@@ -44,7 +47,7 @@ export function Profile({ username }: Props) {
             </div>
           ) : (
             <div className="h-16 w-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg ring-4 ring-zinc-900">
-              <User className="h-8 w-8 text-white" />
+              {mounted && <User className="h-8 w-8 text-white" />}
             </div>
           )}
           
@@ -77,7 +80,7 @@ export function Profile({ username }: Props) {
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex flex-col items-end shadow-md w-full md:w-auto text-right">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">FairScore</span>
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              {mounted && <ShieldCheck className="h-4 w-4 text-emerald-400" />}
             </div>
             {fairScore === null ? (
               <div className="h-8 w-16 bg-zinc-800 animate-pulse rounded"></div>

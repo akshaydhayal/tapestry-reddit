@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { cn } from '@/utils/utils'
 import { LoaderCircle } from 'lucide-react'
 
@@ -10,6 +11,14 @@ export function Spinner({
   large?: boolean
   className?: string
 }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
   return (
     <LoaderCircle
       size={large ? 32 : size}

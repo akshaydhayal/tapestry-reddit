@@ -25,6 +25,11 @@ export default function SubnetPage() {
   
   // Mock user's FairScore
   const [userScore, setUserScore] = useState<number | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const fetchPosts = useCallback(async () => {
     setIsLoading(true)
@@ -168,10 +173,10 @@ export default function SubnetPage() {
 
   return (
     <div className="flex min-h-screen bg-black text-white p-4 sm:p-6 lg:p-8">
-      <main className="max-w-2xl w-full mx-auto">
+      <main className="max-w-3xl w-full mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
-            <ArrowLeft className="h-5 w-5" />
+            {mounted && <ArrowLeft className="h-5 w-5" />}
             <span>Back to Global Feed</span>
           </Link>
           
@@ -179,14 +184,14 @@ export default function SubnetPage() {
             <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
               #{subnet}
             </h1>
-            <p className="text-xs text-zinc-500 font-mono tracking-wider mt-1 uppercase">Members: {Math.floor(Math.random() * 1000) + 100}</p>
+            <p className="text-xs text-zinc-500 font-mono tracking-wider mt-1 uppercase">Members: {mounted ? (Math.floor(Math.sin(subnet.length) * 500) + 600) : '...'}</p>
           </div>
         </div>
 
         {isLocked ? (
           <div className="mt-12 p-8 border border-zinc-800 bg-zinc-950/50 backdrop-blur-md rounded-2xl text-center relative overflow-hidden shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 opacity-50" />
-            <LockKeyhole className="h-16 w-16 mx-auto text-zinc-600 mb-6 relative z-10" />
+            {mounted && <LockKeyhole className="h-16 w-16 mx-auto text-zinc-600 mb-6 relative z-10" />}
             <h2 className="text-2xl font-bold mb-4 relative z-10">Access Restricted</h2>
             <p className="text-zinc-400 mb-6 relative z-10 max-w-md mx-auto">
               This subnet is gated by FairScale reputation. <br/>

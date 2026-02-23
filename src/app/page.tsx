@@ -6,6 +6,7 @@ import { PostProps } from '@/components/feed/post-card'
 import { useState, useEffect, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Globe, Users, Loader2 } from 'lucide-react'
+import { useFollowEvent } from '@/hooks/use-follow-event'
 
 // Dummy data for visual presentation before Tapestry integration
 const initialDummyPosts: PostProps[] = [
@@ -19,7 +20,7 @@ const initialDummyPosts: PostProps[] = [
     subnet: '#SolanaDevs',
     likesCount: 142,
     commentsCount: 23,
-    createdAt: new Date().toISOString()
+    createdAt: "2024-03-20T10:00:00.000Z"
   },
   {
     id: '2',
@@ -31,7 +32,7 @@ const initialDummyPosts: PostProps[] = [
     subnet: '#DeFiDegens',
     likesCount: 89,
     commentsCount: 12,
-    createdAt: new Date(Date.now() - 3600000).toISOString()
+    createdAt: "2024-03-20T09:00:00.000Z"
   },
   {
     id: '3',
@@ -43,94 +44,110 @@ const initialDummyPosts: PostProps[] = [
     subnet: '#NFTWhales',
     likesCount: 456,
     commentsCount: 89,
-    createdAt: new Date(Date.now() - 7200000).toISOString()
+    createdAt: "2024-03-20T08:00:00.000Z"
   }
 ]
+
+import { WhoToFollow } from '@/components/feed/who-to-follow'
 
 export default function HomeFeedPage() {
   const [posts, setPosts] = useState<PostProps[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingFeed, setIsLoadingFeed] = useState(true)
   const [feedType, setFeedType] = useState<'following' | 'global'>('global')
+  const [mounted, setMounted] = useState(false)
   const { connected, publicKey } = useWallet()
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const fetchPosts = useCallback(async () => {
+    console.log(`Fetching ${feedType} feed...`)
+    setPosts([]) // Clear current posts to show loading/empty state during transition
     setIsLoadingFeed(true)
-    if (feedType === 'global') {
-      try {
-        const res = await fetch('/api/contents/feed')
-        if (!res.ok) throw new Error('Failed to fetch feed')
-        
-        const data = await res.json()
-          if (data && data.contents) {
-            const tapestryPosts: PostProps[] = data.contents.map((item: any) => {
-              let contentText = item.content.text || '';
-              let subnetValue = '';
-              let imageUrlValue: string | undefined = undefined;
+    const endpoint = feedType === 'global' 
+      ? `/api/contents/feed?t=${Date.now()}` 
+      : `/api/contents/following?walletAddress=${publicKey?.toBase58() || ''}&t=${Date.now()}`
+    
+    if (feedType === 'following' && !publicKey) {
+      setPosts([])
+      setIsLoadingFeed(false)
+      return
+    }
+
+    try {
+      const res = await fetch(endpoint)
+      if (!res.ok) throw new Error('Failed to fetch feed')
+      
+      const data = await res.json()
+      if (data && data.contents) {
+        const tapestryPosts: PostProps[] = data.contents.map((item: any) => {
+          let contentText = item.content.text || '';
+          let subnetValue = '';
+          let imageUrlValue: string | undefined = undefined;
+          
+          if (contentText.includes('|TAPESTRY_META|')) {
+              const parts = contentText.split('|TAPESTRY_META|');
+              contentText = parts[0].trim();
+              const meta = parts[1];
               
-              if (contentText.includes('|TAPESTRY_META|')) {
-                  const parts = contentText.split('|TAPESTRY_META|');
-                  contentText = parts[0].trim();
-                  const meta = parts[1];
-                  
-                  const subnetMatch = meta.match(/subnet=([^|]+)/);
-                  if (subnetMatch) subnetValue = subnetMatch[1];
-                  
-                const imgMatch = meta.match(/imageUrl=([^|]+)/);
-                if (imgMatch) imageUrlValue = imgMatch[1];
-            }
-            
-            // Check for top-level imageUrl returned by Tapestry API
-            if (!imageUrlValue && item.content.imageUrl) {
-                imageUrlValue = item.content.imageUrl;
-            }
-
-            if (!imageUrlValue && !contentText.includes('|TAPESTRY_META|')) {
-               // Fallback to legacy properties if they ever get fixed in the Tapestry API response mappings
-               const textProp = item.content.properties?.find((p: any) => p.key === 'text')
-               const subnetProp = item.content.properties?.find((p: any) => p.key === 'subnet')
-               const imageProp = item.content.properties?.find((p: any) => p.key === 'imageUrl')
-               
-               if (!contentText) contentText = textProp?.value || 'No content'
-               subnetValue = subnetProp ? subnetProp.value : ''
-               imageUrlValue = imageProp ? imageProp.value : undefined
-            }
-
-              return {
-                id: item.content.id,
-                author: {
-                  username: item.authorProfile.username,
-                  walletAddress: item.authorProfile.id,
-                },
-                content: contentText || 'No content',
-                subnet: subnetValue,
-                imageUrl: imageUrlValue,
-                likesCount: item.socialCounts?.likeCount || 0,
-                commentsCount: item.socialCounts?.commentCount || 0,
-                createdAt: new Date(item.content.created_at).toISOString(),
-                isLiked: item.requestingProfileSocialInfo?.hasLiked || false,
-              }
-            })
-          
-          // Filter out empty posts without text and sort newest first
-          const validPosts = tapestryPosts
-            .filter(p => p.content !== 'No content')
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          
-          setPosts(validPosts)
+              const subnetMatch = meta.match(/subnet=([^|]+)/);
+              if (subnetMatch) subnetValue = subnetMatch[1];
+              
+            const imgMatch = meta.match(/imageUrl=([^|]+)/);
+            if (imgMatch) imageUrlValue = imgMatch[1];
         }
-      } catch (error) {
-        console.error('Error fetching global feed:', error)
-        setPosts([])
-      } finally {
-        setIsLoadingFeed(false)
-      }
+        
+        // Check for top-level imageUrl returned by Tapestry API
+        if (!imageUrlValue && item.content.imageUrl) {
+            imageUrlValue = item.content.imageUrl;
+        }
+
+        if (!imageUrlValue && !contentText.includes('|TAPESTRY_META|')) {
+           // Fallback to legacy properties if they ever get fixed in the Tapestry API response mappings
+           const textProp = item.content.properties?.find((p: any) => p.key === 'text')
+           const subnetProp = item.content.properties?.find((p: any) => p.key === 'subnet')
+           const imageProp = item.content.properties?.find((p: any) => p.key === 'imageUrl')
+           
+           if (!contentText) contentText = textProp?.value || 'No content'
+           subnetValue = subnetProp ? subnetProp.value : ''
+           imageUrlValue = imageProp ? imageProp.value : undefined
+        }
+
+          return {
+            id: item.content.id,
+            author: {
+              username: item.authorProfile.username,
+              walletAddress: item.authorProfile.id,
+            },
+            content: contentText || 'No content',
+            subnet: subnetValue,
+            imageUrl: imageUrlValue,
+            likesCount: item.socialCounts?.likeCount || 0,
+            commentsCount: item.socialCounts?.commentCount || 0,
+            createdAt: new Date(item.content.created_at).toISOString(),
+            isLiked: item.requestingProfileSocialInfo?.hasLiked || false,
+          }
+        })
+      
+      // Filter out empty posts without text and sort newest first
+      const validPosts = tapestryPosts
+        .filter(p => p.content !== 'No content')
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      
+      setPosts(validPosts)
     } else {
-      // Handle 'following' feed logic here if implemented
-      setPosts([]) // Clear posts for 'following' if not implemented
+      setPosts([])
+    }
+    } catch (error) {
+      console.error(`Error fetching ${feedType} feed:`, error)
+      setPosts([])
+    } finally {
       setIsLoadingFeed(false)
     }
-  }, [feedType])
+  }, [feedType, publicKey])
+
+  useFollowEvent(fetchPosts)
 
   useEffect(() => {
     fetchPosts()
@@ -178,22 +195,22 @@ export default function HomeFeedPage() {
   return (
     <div className="flex min-h-screen bg-black text-white">
       {/* Sidebar / Left Column (Visible on Desktop) */}
-      <aside className="hidden lg:flex w-64 flex-col fixed h-screen pt-4 border-r border-zinc-800 px-4">
+      <aside className="hidden lg:flex w-56 flex-col fixed h-screen pt-4 border-r border-zinc-800 px-4">
         <h2 className="text-xl font-bold mb-6 text-zinc-100 px-2">Feeds</h2>
         <nav className="flex flex-col gap-2">
           <button
             onClick={() => setFeedType('global')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${feedType === 'global' ? 'bg-indigo-600 shadow-indigo-500/20 text-white' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
           >
-            <Globe className="h-5 w-5" />
+            {mounted && <Globe className="h-5 w-5" />}
             <span className="font-medium text-lg">Global</span>
           </button>
           <button 
             onClick={() => setFeedType('following')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${feedType === 'following' ? 'bg-indigo-600 shadow-indigo-500/20 text-white' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'}`}
-            disabled={!connected}
+            disabled={!mounted || !connected}
           >
-            <Users className="h-5 w-5" />
+            {mounted && <Users className="h-5 w-5" />}
             <span className="font-medium text-lg">Following</span>
           </button>
         </nav>
@@ -218,7 +235,7 @@ export default function HomeFeedPage() {
       </aside>
 
       {/* Main Feed Content */}
-      <main className="flex-1 lg:ml-64 max-w-2xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 lg:ml-56 max-w-3xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         <header className="mb-6 lg:hidden flex gap-4 border-b border-zinc-800 pb-4">
           <button 
             onClick={() => setFeedType('global')}
@@ -242,7 +259,7 @@ export default function HomeFeedPage() {
           </h2>
           {isLoadingFeed ? (
             <div className="flex justify-center items-center py-20">
-              <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />
+              {mounted && <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />}
             </div>
           ) : (
             <Feed posts={posts} />
@@ -254,7 +271,7 @@ export default function HomeFeedPage() {
       <aside className="hidden xl:block w-80 pl-8 pt-8 relative">
         <div className="sticky top-8 bg-zinc-950/50 border border-zinc-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-md">
           <h3 className="font-bold text-lg mb-4 text-zinc-100">Your Reputation</h3>
-          {connected ? (
+          {mounted && connected ? (
             <div className="flex flex-col gap-4">
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">842</span>
@@ -269,9 +286,11 @@ export default function HomeFeedPage() {
             </div>
           ) : (
             <div className="text-sm text-zinc-400">
-              Connect your wallet to calculate your on-chain FairScale reputation score and unlock gated communities.
+              {mounted ? "Connect your wallet to calculate your on-chain FairScale reputation score and unlock gated communities." : "Loading reputation..."}
             </div>
           )}
+          
+          {mounted && <WhoToFollow />}
         </div>
       </aside>
     </div>
