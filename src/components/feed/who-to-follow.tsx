@@ -27,11 +27,26 @@ export function WhoToFollow() {
     if (walletAddress) getSuggestedGlobal(walletAddress)
   })
 
+  // Filter out communities and current user
+  const filterValidUsers = (list: any[]) => {
+    if (!list || !Array.isArray(list)) return []
+    return list.filter(item => {
+      const profile = item.profile || (item.profiles && item.profiles[0]?.profile) || item;
+      const un = profile.username || '';
+      const bio = profile.bio || '';
+      if (!un || un === 'Anonymous') return false;
+      if (un === mainUsername) return false;
+      if (un.startsWith('Community_')) return false;
+      if (bio.includes('"isCommunity":true')) return false;
+      return true;
+    })
+  }
+
   // Combine or fallback logic
   const displayProfiles = (suggestedProfiles && Array.isArray(suggestedProfiles) && suggestedProfiles.length > 0)
-    ? suggestedProfiles.slice(0, 5)
+    ? filterValidUsers(suggestedProfiles).slice(0, 5)
     : (allProfiles && Array.isArray(allProfiles))
-      ? allProfiles.slice(0, 5)
+      ? filterValidUsers(allProfiles).slice(0, 5)
       : []
 
   const isLoading = loadingSuggested || loadingAll
