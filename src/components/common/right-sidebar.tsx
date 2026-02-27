@@ -26,7 +26,11 @@ export function RightSidebar() {
   const [mounted, setMounted] = useState(false)
   
   const currentProfileList = profiles && profiles.length > 0 ? profiles[0] : null
-  const { fairScore, isLoading: isScoreLoading } = useFairScore(currentProfileList)
+  const { fairScore, isLoading: isScoreLoading } = useFairScore(
+    currentProfileList?.wallet?.address,
+    currentProfileList?.profile?.username,
+    currentProfileList?.profile?.bio
+  )
   
   const router = useRouter()
 

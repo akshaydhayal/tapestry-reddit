@@ -25,6 +25,7 @@ export interface PostProps {
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useProfileStore } from '@/store/profile'
+import { ProfileHoverCard } from '@/components/profile/profile-hover-card'
 
 export function PostCard({ post }: { post: PostProps }) {
   const router = useRouter()
@@ -119,28 +120,34 @@ export function PostCard({ post }: { post: PostProps }) {
     >
       <div 
         onClick={handleUserClick}
-        className="flex-shrink-0 pt-1"
+        className="flex-shrink-0 pt-1 relative z-10"
       >
-        <Avatar className="h-10 w-10 ring-0 hover:opacity-80 transition-opacity">
-          {post.author.avatarUrl ? (
-            <Image src={post.author.avatarUrl} alt={post.author.username} fill className="object-cover" />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-[#1d9aef] to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
-              {post.author.username.charAt(0).toUpperCase()}
-            </div>
-          )}
-        </Avatar>
+        <ProfileHoverCard username={post.author.username}>
+          <div className="inline-block">
+            <Avatar className="h-10 w-10 ring-0 hover:opacity-80 transition-opacity">
+              {post.author.avatarUrl ? (
+                <Image src={post.author.avatarUrl} alt={post.author.username} fill className="object-cover" />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-[#1d9aef] to-cyan-500 rounded-full flex items-center justify-center text-white font-bold">
+                  {post.author.username.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </Avatar>
+          </div>
+        </ProfileHoverCard>
       </div>
       
       <div className="flex-1 min-w-0 pb-1">
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-1.5 overflow-hidden">
-            <span 
-              onClick={handleUserClick}
-              className="font-bold text-[15px] text-white hover:underline truncate"
-            >
-              {post.author.username}
-            </span>
+            <ProfileHoverCard username={post.author.username}>
+              <span 
+                onClick={handleUserClick}
+                className="font-bold text-[15px] text-white hover:underline truncate relative z-10 inline-block cursor-pointer"
+              >
+                {post.author.username}
+              </span>
+            </ProfileHoverCard>
             <span 
               onClick={handleUserClick}
               className="text-[15px] text-zinc-500 truncate max-w-[120px]"

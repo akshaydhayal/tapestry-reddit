@@ -78,10 +78,23 @@ export function FollowButton({ username }: Props) {
         <span>
           <LoadCircle />
         </span>
+      ) : isFollowing ? (
+        <button
+          onClick={handleFollowToggleClicked}
+          disabled={loading}
+          className="group relative h-8 px-4 font-bold text-sm bg-transparent border border-zinc-600 text-white rounded-full hover:border-[#f4212e] hover:bg-[#f4212e]/10 hover:text-[#f4212e] transition-colors overflow-hidden disabled:opacity-50 min-w-[100px]"
+        >
+          <span className="block group-hover:hidden">Following</span>
+          <span className="hidden group-hover:block">Unfollow</span>
+        </button>
       ) : (
-        <Button onClick={handleFollowToggleClicked} disabled={loading}>
-          {isFollowing ? 'Unfollow' : 'Follow'}
-        </Button>
+        <button
+          onClick={handleFollowToggleClicked}
+          disabled={loading}
+          className="h-8 px-4 font-bold text-sm bg-white text-black rounded-full hover:bg-zinc-200 transition-colors disabled:opacity-50 min-w-[80px]"
+        >
+          Follow
+        </button>
       )}
 
       {success && (

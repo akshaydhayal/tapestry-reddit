@@ -30,7 +30,11 @@ export default function SubnetPage() {
   })
   
   const currentProfileList = profiles && profiles.length > 0 ? profiles[0] : null
-  const { fairScore: userScore, isLoading: isScoreLoading } = useFairScore(currentProfileList)
+  const { fairScore: userScore, isLoading: isScoreLoading } = useFairScore(
+    currentProfileList?.wallet?.address,
+    currentProfileList?.profile?.username,
+    currentProfileList?.profile?.bio
+  )
 
   const [mounted, setMounted] = useState(false)
 

@@ -4,8 +4,9 @@ import { Card } from '@/components/common/card'
 import { CopyPaste } from '@/components/common/copy-paste'
 import { Bio } from '@/components/profile/bio'
 import { useGetProfileInfo } from '@/components/profile/hooks/use-get-profile-info'
-import { User } from 'lucide-react'
+import { User, Activity } from 'lucide-react'
 import Image from 'next/image'
+import { useFairScore } from '@/hooks/use-fairscore'
 
 interface Props {
   username: string
@@ -13,6 +14,11 @@ interface Props {
 
 export function MyProfile({ username }: Props) {
   const { data, refetch } = useGetProfileInfo({ username })
+  const { fairScore, isLoading: isScoreLoading } = useFairScore(
+    data?.walletAddress,
+    data?.profile?.username,
+    data?.profile?.bio
+  )
 
   return (
     <div className="w-full border-b border-zinc-900 pb-4">
@@ -69,7 +75,7 @@ export function MyProfile({ username }: Props) {
         </div>
 
         {/* Stats */}
-        <div className="mt-3 flex gap-5 text-[15px]">
+        <div className="mt-3 flex flex-wrap gap-5 text-[15px] items-center">
           <div className="hover:underline cursor-pointer flex gap-1 items-center">
             <span className="font-bold text-white">{data?.socialCounts?.following || 0}</span>
             <span className="text-zinc-500">Following</span>
@@ -78,6 +84,12 @@ export function MyProfile({ username }: Props) {
             <span className="font-bold text-white">{data?.socialCounts?.followers || 0}</span>
             <span className="text-zinc-500">Followers</span>
           </div>
+          {fairScore !== null && (
+            <div className="flex gap-1.5 items-center px-2 py-0.5 bg-[#1d9aef]/10 text-[#1d9aef] rounded-full text-sm font-semibold border border-[#1d9aef]/20">
+              <Activity size={14} className="animate-pulse" />
+              <span>{isScoreLoading ? '...' : fairScore} FairScore</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

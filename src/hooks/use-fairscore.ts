@@ -8,7 +8,7 @@ interface UseFairScoreReturn {
   error: string | null;
 }
 
-export function useFairScore(profileData?: IProfileList | null): UseFairScoreReturn {
+export function useFairScore(walletAddress?: string | null, username?: string | null, bio?: string | null): UseFairScoreReturn {
   const [fairScore, setFairScore] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,14 +17,12 @@ export function useFairScore(profileData?: IProfileList | null): UseFairScoreRet
     let isMounted = true;
 
     const fetchAndCacheScore = async () => {
-      if (!profileData?.wallet?.address || !profileData?.profile?.username) {
+      if (!walletAddress || !username) {
         if (isMounted) setFairScore(null);
         return;
       }
 
-      const wallet = profileData.wallet.address;
-      const username = profileData.profile.username;
-      const currentBio = profileData.profile.bio;
+      const currentBio = bio || '';
 
       // 1. Check Cache
       const { cachedScore, cleanBio } = extractFairScore(currentBio);
@@ -39,7 +37,7 @@ export function useFairScore(profileData?: IProfileList | null): UseFairScoreRet
       setError(null);
       
       try {
-        const res = await fetch(`/api/fairscore?wallet=${wallet}`);
+        const res = await fetch(`/api/fairscore?wallet=${walletAddress}`);
         if (!res.ok) throw new Error('Failed to fetch from FairScore API');
         
         const data = await res.json();
@@ -73,7 +71,7 @@ export function useFairScore(profileData?: IProfileList | null): UseFairScoreRet
     return () => {
       isMounted = false;
     };
-  }, [profileData?.wallet?.address, profileData?.profile?.username, profileData?.profile?.bio]);
+  }, [walletAddress, username, bio]);
 
   return { fairScore, isLoading, error };
 }
